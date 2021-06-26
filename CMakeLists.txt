@@ -9,7 +9,6 @@ set(CMAKE_BUILD_TYPE Release)
 endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "./cmake/")
 
-
 set(INCLUDE_DIR "./include")
 file(GLOB SRC "./src/*" ${INCLUDE_DIR}/*)
 
