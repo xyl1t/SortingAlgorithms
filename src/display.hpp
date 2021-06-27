@@ -13,7 +13,7 @@
 // A wraper for SDL_Window and some other stuff
 class Display {
 public:
-    Display(int width, int height, const std::string& title, bool vsync = false, float xScale = 1.0f, float yScale = 1.0f);
+    Display(int width, int height, const std::string& title, bool resizeable = false, bool vsync = false, float xScale = 1.0f, float yScale = 1.0f);
     
     void Update();
     void Clear();

@@ -2,13 +2,13 @@
 
 #include <iostream>
 
-Display::Display(int width, int height, const std::string& title, bool vsync, float xScale, float yScale) : width(width), height(height), title(title), xScale(xScale), yScale(yScale), eventHandler(EventHandler::GetInstance()) {
+Display::Display(int width, int height, const std::string& title, bool resizeable, bool vsync, float xScale, float yScale) : width(width), height(height), title(title), xScale(xScale), yScale(yScale), eventHandler(EventHandler::GetInstance()) {
     if(!SDL_WasInit(SDL_INIT_EVERYTHING)) {
         isInit = false;
         return;
     }
     
-    window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width*xScale, height*yScale, SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width*xScale, height*yScale, SDL_WINDOW_ALLOW_HIGHDPI | (resizeable * SDL_WINDOW_RESIZABLE));
     
 	uint32_t flags = vsync * SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED;
     renderer = SDL_CreateRenderer(window, -1, flags);
