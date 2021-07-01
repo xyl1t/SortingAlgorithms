@@ -51,7 +51,7 @@ void shuffle(std::vector<float>& data, std::function<void(int)> highlight) {
 	constexpr int shuffleFactor = 3;
 	for (int i = 0; i < data.size()*shuffleFactor; i++) {
 		while (pause) {}
-		Sleep(speed);
+		sleep(speed);
 		mtx.lock();
 		std::swap(data[i/shuffleFactor], data[rand()%data.size()]);
 		mtx.unlock();
@@ -67,7 +67,7 @@ void bubbleSort(std::vector<float>& data, std::function<void(int)> highlight) {
 	for (int i = 0; i < data.size(); i++) {
 		for (int j = 1; j < data.size() - i; j++) {
 			while (pause) {}
-			Sleep(speed);
+			sleep(speed);
 			
 			highlight(j);
 			
