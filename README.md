@@ -1,6 +1,8 @@
 # Sorting algorithm visualisation
 Small school project for visualising sorting algorithms, in particular heap sort.
 
+![visualiser](./vis.gif)
+
 ## Building
 Mac/Linux:
 ```bash
