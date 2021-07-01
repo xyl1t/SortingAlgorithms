@@ -10,3 +10,6 @@ cmake ..
 make
 ./SortingAlgorithm
 ```
+
+## License
+Licensed under the [MIT license](https://github.com/xyl1t/SortingAlgorithms/blob/1.0/LICENSE.md)
