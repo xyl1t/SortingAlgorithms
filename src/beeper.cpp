@@ -1,5 +1,9 @@
 #include "beeper.hpp"
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 Beeper::Beeper()
 {
     SDL_AudioSpec desiredSpec;

@@ -16,29 +16,49 @@ using namespace cdr;
 #include <thread>
 #include <atomic>
 #include <string>
+#include <chrono>
+#include <mutex>
+#if __has_include("SDL2/SDL.h")
+#include <SDL2/SDL.h>
+#else
 #include <SDL.h>
+#endif
+
+#ifdef WIN32
+#include <windows.h>
+#undef DrawText
+#endif
+
+void sleep(int ms) {
+#ifdef WIN32
+	Sleep(ms);
+#else
+	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+#endif
+}
 
 std::mutex mtx;
 
 void goThroughData(std::vector<float>& data, std::function<void(int)> highlight) {
 	for (int i = 0; i < data.size(); i++) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(3));
+		sleep(3);
 		highlight(i);
 	}
 }
 void shuffle(std::vector<float>& data, std::function<void(int)> highlight) {
 	swaps = 0;
 	comparisons = 0;
-	constexpr int shuffleFactor = 9;
+	constexpr int shuffleFactor = 3;
 	for (int i = 0; i < data.size()*shuffleFactor; i++) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(speed));
+		while (pause) {}
+		Sleep(speed);
 		mtx.lock();
 		std::swap(data[i/shuffleFactor], data[rand()%data.size()]);
 		mtx.unlock();
 		swaps++;
 		highlight(i/shuffleFactor);
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	sleep(50);
 	highlight(-1);
 }
 void bubbleSort(std::vector<float>& data, std::function<void(int)> highlight) {
@@ -46,7 +66,8 @@ void bubbleSort(std::vector<float>& data, std::function<void(int)> highlight) {
 	comparisons = 0;
 	for (int i = 0; i < data.size(); i++) {
 		for (int j = 1; j < data.size() - i; j++) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(speed));
+			while (pause) {}
+			Sleep(speed);
 			
 			highlight(j);
 			
@@ -61,10 +82,10 @@ void bubbleSort(std::vector<float>& data, std::function<void(int)> highlight) {
 		if (swaps == 0) break;
 	}
 	if (swaps != 0) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		sleep(10);
 		goThroughData(data, highlight);
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	sleep(50);
 	highlight(-1);
 }
 void selectionSort(std::vector<float>& data, std::function<void(int)> highlight) {
@@ -73,7 +94,8 @@ void selectionSort(std::vector<float>& data, std::function<void(int)> highlight)
 	for (int i = 0; i < data.size() - 1; i++) {
 		int min_idx = i;
 		for (int j = i + 1; j < data.size(); j++) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(speed));
+			while (pause) {}
+			sleep(speed);
 			highlight(j);
 			comparisons++;
 			if (data[j] < data[min_idx]) {
@@ -91,16 +113,45 @@ void selectionSort(std::vector<float>& data, std::function<void(int)> highlight)
 		}
 	}
 	if (swaps != 0) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		sleep(10);
 		goThroughData(data, highlight);
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	sleep(50);
+	highlight(-1);
+}
+void insertionSort(std::vector<float>& data, std::function<void(int)> highlight)
+{
+	swaps = 0;
+	comparisons = 0;
+	int n = data.size();
+    int i, j;
+	float key;
+    for (i = 1; i < n; i++)
+    {
+        key = data[i];
+        j = i - 1;
+
+		comparisons++;
+        while (j >= 0 && data[j] > key)
+        {
+			while (pause) {}
+			sleep(speed);
+			highlight(j);
+            data[j + 1] = data[j];
+			swaps++;
+            j = j - 1;
+        }
+        data[j + 1] = key;
+		swaps++;
+    }
+	sleep(50);
 	highlight(-1);
 }
 
 void heapify(std::vector<float>& data, int n, int i, std::function<void(int)> highlight)
 {
-	std::this_thread::sleep_for(std::chrono::milliseconds(speed));
+	while (pause) {}
+	sleep(speed);
 	highlight(i);
     int largest = i; // Initialize largest as root
     int l = 2 * i + 1; // left = 2*i + 1
@@ -132,10 +183,12 @@ void heapifyOnly(std::vector<float>& data, std::function<void(int)> highlight) {
 	comparisons = 0;
 	int n = data.size();
     // Build heap (rearrange array)
-    for (int i = n / 2 - 1; i >= 0; i--)
+    for (int i = n / 2 - 1; i >= 0; i--) {
+		while (pause) {}
         heapify(data, n, i, highlight);
+	}
 		
-	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	sleep(50);
 	highlight(-1);
 }
 void heapSort(std::vector<float>& data, std::function<void(int)> highlight)
@@ -144,13 +197,16 @@ void heapSort(std::vector<float>& data, std::function<void(int)> highlight)
 	swaps = 0;
 	int n = data.size();
     // Build heap (rearrange array)
-    for (int i = n / 2 - 1; i >= 0; i--)
+    for (int i = n / 2 - 1; i >= 0; i--) {
+		while (pause) {}
         heapify(data, n, i, highlight);
+	}
  
     // One by one extract an element from heap
     for (int i = n - 1; i > 0; i--) {
         // Move current root to end
-		std::this_thread::sleep_for(std::chrono::milliseconds(speed));
+		while (pause) {}
+		sleep(speed);
 		highlight(i);
 		mtx.lock();
         std::swap(data[0], data[i]);
@@ -160,13 +216,16 @@ void heapSort(std::vector<float>& data, std::function<void(int)> highlight)
         // call max heapify on the reduced heap
         heapify(data, i, 0, highlight);
     }
-	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	sleep(50);
 	highlight(-1);
 }
 
 
-int main(int argc, char** argv) {
+int main(int argc, char *argv[]) {
 	SDL_Init(SDL_INIT_EVERYTHING);
+#ifdef WIN32
+	putenv("SDL_AUDIODRIVER=dsound");
+#endif
 	srand(time(nullptr));
     
 	Timer t;
@@ -216,9 +275,10 @@ int main(int argc, char** argv) {
 		heapSort,
 		heapifyOnly,
 		selectionSort,
+		insertionSort,
 	};
 	std::thread currentThread;
-    std::atomic<bool> sortingFinished(true); // Use an atomic flag.
+    std::atomic<bool> sortingFinished(true);
 	bool reseted = false;
 	
 	while (!display.IsClosed()) {
@@ -233,13 +293,15 @@ int main(int argc, char** argv) {
 		if (eh.IsKeyPressed(SDL_SCANCODE_H)) { old = -1; current = 2; }
 		if (eh.IsKeyPressed(SDL_SCANCODE_H) && eh.IsKeyDown(SDL_SCANCODE_LSHIFT)) { old = -1; current = 3; }
 		if (eh.IsKeyPressed(SDL_SCANCODE_S)) { old = -1; current = 4; }
+		if (eh.IsKeyPressed(SDL_SCANCODE_I)) { old = -1; current = 5; }
+		if (eh.IsKeyPressed(SDL_SCANCODE_RETURN)) { pause = !pause; }
 		
-		if (eh.IsKeyDown(SDL_SCANCODE_LEFT)) { 
+		if (eh.IsKeyDown(SDL_SCANCODE_LEFT) && data.size() > 1) { 
 			data.erase(data.end() - 1);
 			oldData.erase(oldData.end() - 1);
 			dataColor.erase(dataColor.end() - 1);
 			for (int i = 0; i < data.size(); i++) {
-				data[i] = oldData[i] = i / (float)data.size();
+				data[i] = oldData[i] = (i+1) / (float)data.size();
 			}
 			colWidth = width / (float)data.size(); 
 		}
@@ -249,12 +311,12 @@ int main(int argc, char** argv) {
 			oldData.push_back(val);
 			dataColor.push_back(RGBA::White);
 			for (int i = 0; i < data.size(); i++) {
-				data[i] = oldData[i] = i / (float)data.size();
+				data[i] = oldData[i] = (i+1) / (float)data.size();
 			}
 			colWidth = width / (float)data.size(); 
-		}
-		if (eh.IsKeyDown(SDL_SCANCODE_UP)) { if (speed < 1000) speed++; }
-		if (eh.IsKeyDown(SDL_SCANCODE_DOWN)) { if (speed > 0) speed--; }
+		} 
+		if (eh.IsKeyDown(SDL_SCANCODE_UP)) { speed++; }
+			if (eh.IsKeyDown(SDL_SCANCODE_DOWN)) { if (speed > 0) speed--; }
 		
 		if (old != current) {
 			if (currentThread.joinable())
@@ -272,42 +334,44 @@ int main(int argc, char** argv) {
 		}
 		
 		/* Logic *************************************************/
-		for (int i = 0; i < data.size(); i++) {
-			if (oldData[i] != data[i]) {
-				dataChanged = true; break;
-			} 
-		}
-		dataChanged |= oldHighlightIdx != highlightIdx;
-
-		if (sortingFinished && !reseted) {
-			reseted = true;
+		if (!pause) {
 			for (int i = 0; i < data.size(); i++) {
-				dataColor[i] = RGB::White;
-			}
-		} else if (dataChanged) {
-			dataChanged = false;
-			
-			for (int i = 0; i < data.size(); i++) {
-				dataColor[i] = RGB::White;
-
 				if (oldData[i] != data[i]) {
-					oldData[i] = data[i];
-					dataColor[i] = RGB::Red;
-				}
+					dataChanged = true; break;
+				} 
 			}
+			dataChanged |= oldHighlightIdx != highlightIdx;
 
-			oldHighlightIdx = highlightIdx;
-			if (highlightIdx > -1) {
-				dataColor[highlightIdx] = RGB::Green;
-				b.beep(100 + data[highlightIdx] * 5000, 10);
-				// b.wait();
-				b.beep(100 + data[highlightIdx] * 1000, 3);
+			if (sortingFinished && !reseted) {
+				reseted = true;
+				for (int i = 0; i < data.size(); i++) {
+					dataColor[i] = RGB::White;
+				}
+			} else if (dataChanged) {
+				dataChanged = false;
+				
+				for (int i = 0; i < data.size(); i++) {
+					dataColor[i] = RGB::White;
+
+					if (oldData[i] != data[i]) {
+						oldData[i] = data[i];
+						dataColor[i] = RGB::Red;
+					}
+				}
+
+				oldHighlightIdx = highlightIdx;
+				if (highlightIdx > -1) {
+					dataColor[highlightIdx] = RGB::Green;
+					b.beep(100 + data[highlightIdx] * 5000, 10);
+					// b.wait();
+					b.beep(100 + data[highlightIdx] * 1000, 3);
+				}
 			}
 		}
 		
 		
 		/* DRAW *************************************************/
-		r.Clear(RGB(10, 20, 30));
+		r.Clear(0x0A0F1Fff);
 		for (int i = 0; i < data.size(); i++) {
 			int x = i * colWidth + offsetX/2;
 			int y = height - std::floor(data[i] * colHeight);
@@ -315,10 +379,6 @@ int main(int argc, char** argv) {
 			r.FillRectangle(dataColor[i], 
 			x, y, 
 			std::ceil((i + 1) * colWidth - i * colWidth), data[i] * colHeight);
-			// r.DrawRectangle(RGBA::Blue, 
-			// r.DrawRectangle(RGBA::Black, 
-			// x, y, 
-			// colWidth, data[i] * colHeight);
 		}
 		
 		if (sortingFinished) {
@@ -332,6 +392,7 @@ int main(int argc, char** argv) {
 				case 2: txt_name += "heapsort"; break;
 				case 3: txt_name += "heapify"; break;
 				case 4: txt_name += "selection sort"; break;
+				case 5: txt_name += "insertion sort"; break;
 			}
 			std::string txt_swaps = "swaps: " + std::to_string(swaps);
 			std::string txt_comparisons = "comparisons: " + std::to_string(comparisons);
@@ -351,6 +412,7 @@ int main(int argc, char** argv) {
 			r.DrawText("[Down] slow down", offsetX / 2 + 1/5.f * width, height + Fonts::Raster8x12.GetFontHeight() * 3, TextAlignment::TL);
 			r.DrawText("[Left] Less cols", offsetX / 2 + 2/5.f * width, height + Fonts::Raster8x12.GetFontHeight() * 3, TextAlignment::TL);
 			r.DrawText("[Right] More cols", offsetX / 2 + 3/5.f * width, height + Fonts::Raster8x12.GetFontHeight() * 3, TextAlignment::TL);
+			r.DrawText("  [Enter] Pause", offsetX / 2 + 4/5.f * width, height + Fonts::Raster8x12.GetFontHeight() * 3, TextAlignment::TL);
 		}
 		
 		display.Update();

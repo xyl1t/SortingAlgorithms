@@ -1,8 +1,14 @@
 #ifndef BEEPER_HPP
 #define BEEPER_HPP
 
+#if __has_include("SDL2/SDL.h")
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
+#else
 #include <SDL.h>
 #include <SDL_audio.h>
+#endif
+
 #include <queue>
 #include <cmath>
 
